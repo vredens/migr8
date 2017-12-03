@@ -1,3 +1,3 @@
-migrate
-bin/
-pkg/
+/vendor
+/dist
+/migr8

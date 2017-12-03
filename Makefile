@@ -1,17 +1,29 @@
-.PHONY: all test build linux
+.PHONY: dist config build
 
-all: clean vet test build
+all: clean config vet test build
+
 clean:
-	@rm -rf bin/*
+	rm -rf vendor
+	rm -rf dist
+	rm -f migr8
 
-build: clean
-	@gb build
+config:
+	dep ensure
+
+build: config
+	go build -o migr8
 
 test:
-	@gb test
+	go test ./...
 
 vet:
-	@go vet src/**/*.go
+	go vet *.go
 
-linux: clean
-	@GOOS=linux gb build
+dist:
+	mkdir -p dist
+
+linux:	dist
+	GOOS=linux go build -o ./dist/migr8-linux
+
+darwin:	dist
+	GOOS=darwin go build -o ./dist/migr8-darwin

@@ -3,22 +3,26 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"sync"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
 )
 
-var keysProcessed uint64 = 0
+var keysProcessed uint64
 var startedAt time.Time
 
 func keyProcessed() {
 	// there is no mutex here, but I don't care as this is just information and does not need
 	// to be accurate
-	keysProcessed += 1
-	var duration time.Duration = time.Now().Sub(startedAt)
-	kps := float64(keysProcessed) / float64(duration.Seconds())
-	log.Printf("\r%v keys processd in %v KPS", keysProcessed, kps)
+	keysProcessed++
+
+	if math.Mod(float64(keysProcessed), 1000) == 0 {
+		duration := time.Now().Sub(startedAt)
+		kps := float64(keysProcessed) / float64(duration.Seconds())
+		log.Printf("\r%v keys processd in %v KPS", keysProcessed, kps)
+	}
 }
 
 func scanKeys(queue chan Task, wg *sync.WaitGroup) {

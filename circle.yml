@@ -2,7 +2,7 @@ dependencies:
   pre:
     - sudo apt-get install -y redis-server
   override:
-    - go get github.com/constabulary/gb/...
+    - go get github.com/golang/dep/cmd/dep
 test:
   override:
     - make

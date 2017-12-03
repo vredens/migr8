@@ -18,7 +18,9 @@ type Worker func(queue chan Task, wg *sync.WaitGroup)
 
 type Config struct {
 	Dest      string
+	DestDB    string
 	Source    string
+	SourceDB  string
 	Workers   int
 	Batch     int
 	Prefix    string
@@ -55,9 +57,19 @@ func main() {
 			Value: "127.0.0.1:6379",
 		},
 		cli.StringFlag{
+			Name:  "source-db",
+			Usage: "The database of the redis server to pull data from",
+			Value: "0",
+		},
+		cli.StringFlag{
 			Name:  "dest, d",
 			Usage: "The destination redis server",
 			Value: "127.0.0.1:6379",
+		},
+		cli.StringFlag{
+			Name:  "dest-db",
+			Usage: "The database of the destination redis server",
+			Value: "0",
 		},
 		cli.IntFlag{
 			Name:  "workers, w",
@@ -85,7 +97,9 @@ func main() {
 func ParseConfig(c *cli.Context) {
 	config = Config{
 		Source:    c.GlobalString("source"),
+		SourceDB:  c.GlobalString("source-db"),
 		Dest:      c.GlobalString("dest"),
+		DestDB:    c.GlobalString("dest-db"),
 		Workers:   c.GlobalInt("workers"),
 		Batch:     c.GlobalInt("batch"),
 		Prefix:    c.GlobalString("prefix"),
@@ -101,6 +115,8 @@ func sourceConnection(source string) redis.Conn {
 		panic(err)
 	}
 
+	sourceConn.Do("SELECT", config.SourceDB)
+
 	return sourceConn
 }
 
@@ -110,6 +126,8 @@ func destConnection(dest string) redis.Conn {
 	if err != nil {
 		panic(err)
 	}
+
+	destConn.Do("SELECT", config.DestDB)
 
 	return destConn
 }
